@@ -1,6 +1,6 @@
 use futures::future::join_all;
 use reqwest::Client;
-use serde_yaml::Value;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs::{self, File};
@@ -12,8 +12,8 @@ use reqwest::header;
 use encoding::{DecoderTrap, EncoderTrap, Encoding};
 use encoding::all::UTF_8;
 
-// 将yaml解析为HashMap类型的数据
-fn parse_yaml_file(file_path: &str) -> HashMap<String, HashMap<String, Vec<String>>> {
+// 将json解析为HashMap类型的数据
+fn parse_json_file(file_path: &str) -> HashMap<String, HashMap<String, Vec<String>>> {
     // 读取文件内容
     let mut file = match File::open(file_path) {
         Ok(file) => file,
@@ -23,26 +23,26 @@ fn parse_yaml_file(file_path: &str) -> HashMap<String, HashMap<String, Vec<Strin
             std::process::exit(1);
         }
     };
-    let mut yaml_str = String::new();
-    file.read_to_string(&mut yaml_str)
+    let mut json_str = String::new();
+    file.read_to_string(&mut json_str)
         .expect("Failed to read file");
 
-    // 将 YAML 字符串解析为 serde_yaml::Value
-    let yaml_value: Value = serde_yaml::from_str(&yaml_str).expect("Failed to parse YAML");
+    // 将 JSON 字符串解析为 serde_json::Value
+    let json_value: Value = serde_json::from_str(&json_str).expect("Failed to parse JSON");
 
-    // 将 serde_yaml::Value 转换为 HashMap
-    if let Value::Mapping(map) = yaml_value {
+    // 将 serde_json::Value 转换为 HashMap
+    if let Value::Object(map) = json_value {
         let mut my_dict: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
 
         for (outer_key, outer_value) in map {
-            if let Value::Mapping(inner_map) = outer_value {
+            if let Value::Object(inner_map) = outer_value {
                 let inner_dict: HashMap<String, Vec<String>> = inner_map
                     .into_iter()
                     .filter_map(|(inner_key, inner_value)| {
-                        if let Value::Sequence(seq) = inner_value {
+                        if let Value::Array(arr) = inner_value {
                             Some((
-                                inner_key.as_str().unwrap().to_string(),
-                                seq.into_iter()
+                                inner_key,
+                                arr.into_iter()
                                     .filter_map(|val| val.as_str().map(String::from))
                                     .collect(),
                             ))
@@ -52,12 +52,13 @@ fn parse_yaml_file(file_path: &str) -> HashMap<String, HashMap<String, Vec<Strin
                     })
                     .collect();
 
-                my_dict.insert(outer_key.as_str().unwrap().to_string(), inner_dict);
+                my_dict.insert(outer_key, inner_dict);
             }
         }
+
         return my_dict;
     } else {
-        panic!("YAML is not a mapping");
+        panic!("JSON is not an object");
     }
 }
 
@@ -65,6 +66,7 @@ fn parse_yaml_file(file_path: &str) -> HashMap<String, HashMap<String, Vec<Strin
 fn wait_for_enter() {
     print!("按Enter键，退出程序！");
     io::stdout().flush().expect("Failed to flush stdout");
+
     let mut input = String::new();
     io::stdin()
         .read_line(&mut input)
@@ -80,20 +82,20 @@ async fn fetch_url_content(
 
     match timeout(timeout_duration, client.get(url).header(header::ACCEPT_CHARSET, "UTF-8").send()).await { // 指定请求头中的字符集为UTF-8
         Ok(result) => match result {
-            Ok(response) => {
-                /* 编码问题解决方法1：*/
-                // let utf8_body = response.text_with_charset("UTF-8").await?;
+        Ok(response) => {
+            /* 编码问题解决方法1：*/
+            // let utf8_body = response.text_with_charset("UTF-8").await?;
 
-                /* 编码问题解决方法2：*/
-                // let body = response.text().await?;
-                // let utf8_body = String::from_utf8_lossy(body.as_bytes()).to_string(); // 显式将响应体解码为 UTF-8 字符串
+            /* 编码问题解决方法2：*/
+            // let body = response.text().await?;
+            // let utf8_body = String::from_utf8_lossy(body.as_bytes()).to_string(); // 显式将响应体解码为 UTF-8 字符串
 
-                /* 编码问题解决方法3：*/
-                let body_bytes = response.bytes().await?;
-                let utf8_body = UTF_8.decode(&body_bytes, DecoderTrap::Replace)?; // 使用 encoding 库进行字符集转换
+            /* 编码问题解决方法3：*/
+            let body_bytes = response.bytes().await?;
+            let utf8_body = UTF_8.decode(&body_bytes, DecoderTrap::Replace)?; // 使用 encoding 库进行字符集转换
 
-                Ok(utf8_body)
-            }
+            Ok(utf8_body)
+        }
             Err(_) => Err("下载数据失败，检查网络/链接是否有问题，网站是否被墙了。"
                 .to_string()
                 .into()),
@@ -113,7 +115,7 @@ async fn download_and_process_data(
     urls: Vec<&str>,
     inner_key: &String,
     data_file: &String,
-) -> HashSet<String> {
+    ) -> HashSet<String> {
     let timeout_duration = Duration::from_secs(10);
     let mut tasks = Vec::new();
     for (index, url) in urls.iter().enumerate() {
@@ -200,16 +202,16 @@ fn write_to_file(
 
 #[tokio::main]
 async fn main() {
-    let file_path = "urls.yaml";
-    // 将yaml解析为HashMap类型的数据
-    let my_dict = parse_yaml_file(file_path);
+    let file_path = "urls.json";
+    // 将json解析为HashMap类型的数据
+    let my_dict = parse_json_file(file_path);
 
     // 存放的文件夹
     let dir_name = "output";
     // 检查文件夹是否存在，不存在就创建
     create_directory_if_not_exists(dir_name);
 
-    // 遍历YAML文件中，最外层的key-value
+    // 遍历JSON文件中，最外层的key-value
     for (data_file, value) in &my_dict {
         // 遍历字段里面的key-vlaue（第2层）
         for (inner_key, inner_values) in value {

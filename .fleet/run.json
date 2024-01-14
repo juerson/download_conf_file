@@ -1,0 +1,64 @@
+{
+    "configurations": [
+        {
+            "type": "cargo",
+            "name": "cargo run",
+            "cargoArgs": ["run"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo test",
+            "cargoArgs": ["test"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo run --bin app1",
+            "cargoArgs": ["run","--bin","app1"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo test --bin app1",
+            "cargoArgs": ["test","--bin","app1"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo test --bin app2",
+            "cargoArgs": ["test","--bin","app2"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo run --bin app2",
+            "cargoArgs": ["run","--bin","app2"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo run --bin app3",
+            "cargoArgs": ["run","--bin","app3"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo test --bin app3",
+            "cargoArgs": ["test","--bin","app3"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo run --bin app4",
+            "cargoArgs": ["run","--bin","app4"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo test --bin app4",
+            "cargoArgs": ["test","--bin","app4"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo run --bin app5",
+            "cargoArgs": ["run","--bin","app4"],
+        },
+        {
+            "type": "cargo",
+            "name": "cargo test --bin app5",
+            "cargoArgs": ["test","--bin","app4"],
+        },
+    ]
+}

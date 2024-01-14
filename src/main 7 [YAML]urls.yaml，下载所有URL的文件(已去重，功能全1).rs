@@ -7,10 +7,6 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::io::{self, Write};
 use std::path::Path;
-use tokio::time::{timeout, Duration};
-use reqwest::header;
-use encoding::{DecoderTrap, EncoderTrap, Encoding};
-use encoding::all::UTF_8;
 
 // 将yaml解析为HashMap类型的数据
 fn parse_yaml_file(file_path: &str) -> HashMap<String, HashMap<String, Vec<String>>> {
@@ -72,34 +68,11 @@ fn wait_for_enter() {
 }
 
 // 获取 url 内容
-async fn fetch_url_content(
-    url: &str,
-    timeout_duration: Duration,
-    ) -> Result<String, Box<dyn std::error::Error>> {
+async fn fetch_url_content(url: &str) -> Result<String, reqwest::Error> {
     let client = Client::new();
-
-    match timeout(timeout_duration, client.get(url).header(header::ACCEPT_CHARSET, "UTF-8").send()).await { // 指定请求头中的字符集为UTF-8
-        Ok(result) => match result {
-            Ok(response) => {
-                /* 编码问题解决方法1：*/
-                // let utf8_body = response.text_with_charset("UTF-8").await?;
-
-                /* 编码问题解决方法2：*/
-                // let body = response.text().await?;
-                // let utf8_body = String::from_utf8_lossy(body.as_bytes()).to_string(); // 显式将响应体解码为 UTF-8 字符串
-
-                /* 编码问题解决方法3：*/
-                let body_bytes = response.bytes().await?;
-                let utf8_body = UTF_8.decode(&body_bytes, DecoderTrap::Replace)?; // 使用 encoding 库进行字符集转换
-
-                Ok(utf8_body)
-            }
-            Err(_) => Err("下载数据失败，检查网络/链接是否有问题，网站是否被墙了。"
-                .to_string()
-                .into()),
-        },
-        Err(_) => Err("网络资源请求超时！".to_string().into()),
-    }
+    let response = client.get(url).send().await?;
+    let body = response.text().await?;
+    Ok(body)
 }
 
 // 格式化JSON
@@ -109,49 +82,36 @@ fn format_json(json_str: &str) -> String {
 }
 
 // 下载与处理数据(主要下载数据)
-async fn download_and_process_data(
-    urls: Vec<&str>,
-    inner_key: &String,
-    data_file: &String,
-) -> HashSet<String> {
-    let timeout_duration = Duration::from_secs(10);
+async fn download_and_process_data(urls: Vec<&str>, data_file: &String) -> HashSet<String> {
     let mut tasks = Vec::new();
-    for (index, url) in urls.iter().enumerate() {
-        let task = fetch_url_content(url, timeout_duration);
-        tasks.push((index, task));
+    for url in urls.iter() {
+        let task = fetch_url_content(url);
+        tasks.push(task);
     }
 
-    let results: Vec<_> = join_all(tasks.into_iter().map(|(index, task)| async move {
-        match task.await {
-            Ok(content) => Ok((index, content)),
-            Err(err) => Err((index, err)),
-        }
-    }))
-    .await;
-
+    let results: Vec<_> = join_all(tasks).await.into_iter().collect();
     let mut unique_contents = HashSet::new();
 
     for result in results {
         match result {
-            Ok((_index, content)) => {
+            Ok(content) => {
                 let mut trimmed_content = String::new();
                 if data_file.trim().to_lowercase() == "json" {
-                    let formatted_json = format_json(&content); // // 数据序列化为 JSON 格式的字符串，让其适当的缩进和换行
+                    let formatted_json = format_json(&content); // 数据序列化为 JSON 格式的字符串，让其适当的缩进和换行
                     trimmed_content = formatted_json.trim().to_string();
                 } else if data_file.trim().to_lowercase() == "yaml" {
-                    let formatted_yaml = serde_yaml::to_string(&content).unwrap(); // 数据序列化为 YAML 格式的字符串，让其适当的缩进和换行
-                    trimmed_content = formatted_yaml.trim().to_string();
+                    let yaml_string = serde_yaml::to_string(&content).unwrap(); // 数据序列化为 YAML 格式的字符串，让其适当的缩进和换行
+                    trimmed_content = yaml_string.trim().to_string();
                 } else {
                     // None
                 }
                 unique_contents.insert(trimmed_content);
             }
-            Err((index, err)) => {
-                eprintln!("{}配置文件，{} - {}", inner_key, urls[index], err)
+            Err(err) => {
+                eprintln!("资源下载错误: {:?}", err);
             }
         }
     }
-
     unique_contents
 }
 
@@ -171,7 +131,7 @@ fn write_to_file(
     dir_name: &str,
     inner_key: &str,
     data_file: &str,
-    ) {
+) {
     if unique_contents.len() >= 1 {
         for (index, content) in unique_contents.iter().enumerate() {
             let filename = format!(
@@ -187,14 +147,14 @@ fn write_to_file(
             );
 
             if let Ok(mut file) = File::create(filename.clone()) {
-                // 使用 encoding 库显式指定编码
-                let encoded_content = UTF_8.encode(content, EncoderTrap::Replace).expect("Error encoding content");
-                file.write_all(&encoded_content).expect("Error writing to file");
+                writeln!(file, "{}", content).expect("Error writing to file");
                 println!("  - 数据已经写入文件'{}'", filename);
             } else {
                 eprintln!("  - 创建/打开文件'{}'时出现错误", filename);
             }
         }
+    } else {
+        println!("  - 没有下载到{}相关的数据！", inner_key);
     }
 }
 
@@ -215,9 +175,9 @@ async fn main() {
         for (inner_key, inner_values) in value {
             // 使用 iter 和 cloned 方法将 &Vec<String> 转换为 Vec<&str>
             let urls: Vec<&str> = inner_values.iter().map(|s| s.as_str()).collect();
-            let unique_contents = download_and_process_data(urls, inner_key, data_file).await;
+            let unique_contents = download_and_process_data(urls, data_file).await;
             println!(
-                "{}配置文件，有{}个不相同的，准备将不相同的数据写入文件中...",
+                "{}配置文件，有{}个不相同的，将下载后的数据写入文件中...",
                 inner_key,
                 unique_contents.len()
             );
@@ -225,7 +185,7 @@ async fn main() {
             write_to_file(unique_contents, dir_name, inner_key, data_file);
         }
     }
-
-    println!();
+	
+	println!();
     wait_for_enter();
 }

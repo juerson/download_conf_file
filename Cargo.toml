@@ -2,15 +2,40 @@
 name = "download_conf_file"
 version = "0.1.0"
 edition = "2021"
+rustc-version = "1.75.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+reqwest = { version = "0.11", features = ["blocking", "json"] }
 tokio = { version = "1", features = ["full"] }
 serde = {version = "1.0", features = ["derive"]}
-reqwest = "0.11.20"
-serde_json = "1.0.107"
-rand = "0.8.5"
+serde_json = "1.0.111"
+serde_yaml = "0.9.30"
+futures = "0.3.30"
+encoding = "0.2.33"
 
-[target.x86_64-pc-windows-msvc]
-rustflags = ["-C", "target-feature=+crt-static"]
+[[bin]]
+name = "app1"
+path = "src/01_下载txt中所有链接中的文件.rs"
+target = "x86_64-pc-windows-msvc"
+
+[[bin]]
+name = "app2"
+path = "src/03_[二维JSON]添加url.txt文件中的URL到flat-json.json文件中(写法二).rs"
+target = "x86_64-pc-windows-msvc"
+
+[[bin]]
+name = "app3"
+path = "src/04_[二维JSON]从flat-json.json文件的key值中，找出最优的链接下载.rs"
+target = "x86_64-pc-windows-msvc"
+
+[[bin]]
+name = "app4"
+path = "src/main 8 [JSON]urls.json，下载所有URL的文件(已去重，功能全2).rs"
+target = "x86_64-pc-windows-msvc"
+
+[[bin]]
+name = "app5"
+path = "src/main 9 [YAML]urls.yaml，下载所有URL的文件(已去重，功能全2).rs"
+target = "x86_64-pc-windows-msvc"

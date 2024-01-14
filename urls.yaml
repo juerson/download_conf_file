@@ -1,0 +1,60 @@
+json: 
+  hysteria: 
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/hysteria/1/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/hysteria/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/hysteria/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/hysteria/config.json
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/hysteria/13/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/hysteria/2/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/hysteria/2/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/hysteria/2/config.json
+  hysteria2: 
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/hysteria2/1/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/hysteria2/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/hysteria2/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/hysteria2/config.json
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/hysteria2/13/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/hysteria2/2/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/hysteria2/2/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/hysteria2/2/config.json
+  naiveproxy: 
+    - https://www.gitlabip.xyz/Alvin9999/PAC/master/naiveproxy/1/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/naiveproxy/config.json
+    - https://www.githubip.xyz/Alvin9999/PAC/master/naiveproxy/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/PAC@latest/naiveproxy/config.json
+  singbox: 
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/singbox/1/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/singbox/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/singbox/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/singbox/config.json
+  xray: 
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/xray/1/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/xray/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/xray/config.json
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/xray/config.json
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/xray/3/config.json
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/xray/2/config.json
+    - https://www.githubip.xyz/Alvin9999/pac2/master/xray/2/config.json
+  v2rayB: 
+    - https://fastly.jsdelivr.net/gh/jsvpn/jsproxy@dev/cbnews/20200809/1366909.md
+    - https://www.githubip.xyz/jsvpn/jsproxy/dev/cbnews/20200809/1366909.md
+  v2go: 
+    - https://www.githubip.xyz/jsvpn/jsproxy/dev/yule/20200325/1299699.md
+    - https://fastly.jsdelivr.net/gh/jsvpn/jsproxy@dev/yule/20200325/1299699.md
+yaml: 
+  clash.meta: 
+    - https://www.githubip.xyz/Alvin9999/pac2/master/clash.meta/config.yaml
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/clash.meta/1/config.yaml
+    - https://www.githubip.xyz/Alvin9999/pac2/master/clash.meta/2/config.yaml
+    - https://www.githubip.xyz/Alvin9999/pac2/master/clash.meta/3/config.yaml
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/clash.meta/config.yaml
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/clash.meta/2/config.yaml
+    - https://gitlab.com/free9999/ipupdate/-/raw/master/clash.meta/3/config.yaml
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/clash.meta/13/config.yaml
+    - https://www.gitlabip.xyz/Alvin9999/pac2/master/clash.meta/15/config.yaml
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/clash.meta/config.yaml
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/clash.meta/2/config.yaml
+    - https://fastly.jsdelivr.net/gh/Alvin9999/pac2@latest/clash.meta/3/config.yaml
+  clashB: 
+    - https://fastly.jsdelivr.net/gh/jsvpn/jsproxy@dev/baitai/20200329/1302338.md
+    - https://www.githubip.xyz/jsvpn/jsproxy/dev/baitai/20200329/1302338.md
